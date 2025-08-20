@@ -1,0 +1,39 @@
+[project]
+name = "django-xtdb"
+description = "XTDB database backend for Django"
+version = "0.0.1"
+license = {text = "EUPL"}
+requires-python = ">= 3.12"
+dependencies = [
+  "django >= 5.2",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: Django",
+  "Framework :: Django :: 5.1",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+  "Operating System :: OS Independent",
+]
+
+[tool.ruff]
+fix = true
+extend-exclude = [
+    "__pycache__"
+]
+line-length = 120
+# Support Python 3.12 and higher
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "ERA", "W", "TID", "I", "G", "INP", "T20", "UP", "ISC", "PTH", "SIM", "PLC", "A", "S", "DJ", "PT", "RUF", "C90", "PL", "RET"]
+ignore = [
+    "RUF012", # Django itself isn't typed and django-xtdb also isn't, so this isn't useful for us.
+]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false

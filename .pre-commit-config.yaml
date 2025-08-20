@@ -1,0 +1,47 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: pretty-format-json
+        args: ["--autofix", "--no-ensure-ascii", "--no-sort-keys"]
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.24.1
+    hooks:
+      - id: validate-pyproject
+        files: pyproject.toml$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.12.9"
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: [--py312-plus]
+
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: 1.25.0
+    hooks:
+      - id: django-upgrade
+        args: [--target-version, "5.2"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies: ["tomli"]
