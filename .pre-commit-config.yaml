@@ -23,7 +23,7 @@ repos:
         files: pyproject.toml$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.9"
+    rev: "v0.12.12"
     hooks:
       - id: ruff
       - id: ruff-format
@@ -35,7 +35,7 @@ repos:
         args: [--py311-plus]
 
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: 1.25.0
+    rev: 1.27.0
     hooks:
       - id: django-upgrade
         args: [--target-version, "5.2"]
