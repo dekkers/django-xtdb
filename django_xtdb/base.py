@@ -94,13 +94,6 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
         "Tests that break later tests": {
             "datetimes.tests.DateTimesTests.test_21432",
         },
-        "XTDB does not support inet type": {
-            "validation.tests.GenericIPAddressFieldTests.test_v4_unpack_uniqueness_detection",
-            "validation.tests.GenericIPAddressFieldTests.test_v6_uniqueness_detection",
-            "validation.tests.GenericIPAddressFieldTests.test_correct_generic_ip_passes",
-            "model_fields.test_genericipaddressfield.GenericIPAddressFieldTests.test_save_load",
-            "string_lookup.tests.StringLookupTests.test_ipaddress_on_postgresql",
-        },
         "XTDB does not support order by RANDOM()": {
             "ordering.tests.OrderingTests.test_random_ordering",
         },
@@ -117,6 +110,9 @@ class DatabaseIntrospection(introspection.DatabaseIntrospection):
 
 class DatabaseOperations(operations.DatabaseOperations):
     compiler_module = "django_xtdb.compiler"
+
+    def adapt_ipaddressfield_value(self, value):
+        return value
 
     def sequence_reset_sql(self, style, model_list):
         return []
