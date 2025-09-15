@@ -3,7 +3,7 @@ import time
 from django.db.models.fields import NOT_PROVIDED, AutoField, BigAutoField, Field, SmallAutoField
 
 
-def __field_init__(self, *args, **kwargs):
+def field_init(self, *args, **kwargs):
     self.__orig_init__(*args, **kwargs)
 
     if self.primary_key:
@@ -42,4 +42,4 @@ def monkey_patch():
     BigAutoField.db_returning = False
 
     Field.__orig_init__ = Field.__init__
-    Field.__init__ = __field_init__
+    Field.__init__ = field_init

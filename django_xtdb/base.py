@@ -28,18 +28,16 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
 
     # This is still incomplete
     django_test_skips = {
-        "Tests assumes ordering": {
-            "many_to_one.tests.ManyToOneTests.test_create_after_prefetch",
-        },
+        "Tests assumes ordering": {"many_to_one.tests.ManyToOneTests.test_create_after_prefetch"},
         "Failures that still need to be investigated": {
-            "basic.tests.ConcurrentSaveTests.test_concurrent_delete_with_save",
+            "basic.tests.ConcurrentSaveTests.test_concurrent_delete_with_save"
         },
         "We fake number of changed rows": {
             "basic.tests.SelectOnSaveTests.test_select_on_save_lying_update",
             "basic.tests.SelectOnSaveTests.test_select_on_save",
         },
         "Wrong query count because of forced transaction": {
-            "basic.tests.ModelInstanceCreationTests.test_save_parent_primary_with_default",
+            "basic.tests.ModelInstanceCreationTests.test_save_parent_primary_with_default"
         },
         "XTDB does not support DEFAULT": {
             "basic.tests.ModelInstanceCreationTests.test_save_primary_with_db_default",
@@ -63,9 +61,7 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
             "field_deconstruction.tests.FieldDeconstructionTests.test_auto_field",
             "backends.base.test_operations.SqlFlushTests.test_execute_sql_flush_statements",
         },
-        "XTDB requires primary key column to be set to _id": {
-            "model_indexes.tests.SimpleIndexesTests.test_name_set",
-        },
+        "XTDB requires primary key column to be set to _id": {"model_indexes.tests.SimpleIndexesTests.test_name_set"},
         "XTDB does not support constraints (unique, required, etc.) on data": {
             "many_to_one.tests.ManyToOneTests.test_fk_assignment_and_related_object_cache",
             "many_to_one.tests.ManyToOneTests.test_relation_unsaved",
@@ -91,12 +87,8 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
             "backends.tests.BackendTestCase.test_cursor_execute_with_pyformat",
             "backends.tests.BackendTestCase.test_cursor_executemany",
         },
-        "Tests that break later tests": {
-            "datetimes.tests.DateTimesTests.test_21432",
-        },
-        "XTDB does not support order by RANDOM()": {
-            "ordering.tests.OrderingTests.test_random_ordering",
-        },
+        "Tests that break later tests": {"datetimes.tests.DateTimesTests.test_21432"},
+        "XTDB does not support order by RANDOM()": {"ordering.tests.OrderingTests.test_random_ordering"},
     }
 
 
@@ -120,9 +112,7 @@ class DatabaseOperations(operations.DatabaseOperations):
     def sql_flush(self, style, tables, *, reset_sequences=False, allow_cascade=False):
         return [
             "{} {} {};".format(
-                style.SQL_KEYWORD("DELETE"),
-                style.SQL_KEYWORD("FROM"),
-                style.SQL_FIELD(self.quote_name(table)),
+                style.SQL_KEYWORD("DELETE"), style.SQL_KEYWORD("FROM"), style.SQL_FIELD(self.quote_name(table))
             )
             for table in tables
         ]
@@ -193,17 +183,16 @@ class DatabaseWrapper(base.DatabaseWrapper):
 
     @contextmanager
     def _nodb_cursor(self):
-        """With XTDB we can never connect to the 'postgres' database, so we will
+        """
+        Return a cursor that doesn't connect to a specific database.
+
+        With XTDB we can never connect to the 'postgres' database, so we will
         connect to the first configured XTDB database.
         """
         for connection in connections.all():
             if connection.vendor == "xtdb":
                 conn = self.__class__(
-                    {
-                        **self.settings_dict,
-                        "NAME": connection.settings_dict["NAME"],
-                    },
-                    alias=self.alias,
+                    {**self.settings_dict, "NAME": connection.settings_dict["NAME"]}, alias=self.alias
                 )
                 try:
                     with conn.cursor() as cursor:

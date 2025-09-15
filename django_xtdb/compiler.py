@@ -10,7 +10,7 @@ class SQLCompiler(BaseSQLCompiler):
     # happens if you select two columns of the same name from two different
     # tables
     def as_sql(self, with_limits=True, with_col_aliases=False):
-        return super().as_sql(with_limits, True)
+        return super().as_sql(with_limits, with_col_aliases=True)
 
     def execute_sql(self, *args, **kwargs):
         if self.connection.connection:

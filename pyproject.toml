@@ -30,10 +30,45 @@ line-length = 120
 # Support Python 3.11 and higher
 target-version = "py311"
 
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
 [tool.ruff.lint]
-select = ["E", "F", "ERA", "W", "TID", "I", "G", "INP", "T20", "UP", "ISC", "PTH", "SIM", "PLC", "A", "S", "DJ", "PT", "RUF", "C90", "PL", "RET"]
+select = [
+  "ALL",
+]
 ignore = [
-    "RUF012", # Django itself isn't typed and django-xtdb also isn't, so this isn't useful for us.
+  "A003", # Built-in shadowing is usually not a problem and some built-ins have very generic names
+  "ANN401", # Sometimes Any is needed
+  "ARG002", # The Django APIs have unused arguments
+  "D1", # Docstrings shouldn't be required for everything
+  "COM812", # Incompatible with formatter
+  "D203", # Incompatible with formatter
+  "D212", # Incompatible with D213
+  "EM", # Not a problem
+  "FIX", # Comments indicating todos are useful
+  "FBT002", # We can't fix the Django APIs
+  "PLR2004", # False positives
+  "PLR5501", # Not always better
+  "RET505", # If/else can be more readable by showing intent
+  "RET508", # If/else can be more readable by showing intent
+  "SIM102", # Nested if statement are sometimes useful for better code understanding
+  "SIM103", # Creating long return statements is often less readable
+  "SIM108", # Ternary operator is not always more readable
+  "SIM114", # This is not always easier to understand
+  "S101", # Assert use is normal in pytest tests
+  "S104", # Binding to all is normal in containers
+  "S105", # Disabled because of false positives
+  "S106", # Disabled because of false positives
+  "S308", # Mark_safe usage is okay
+  "S324", # Insecure hash functions can still be useful
+  "S603", # Disabled because of false positives
+  "S607", # Disabled because of false positives
+  "TD002", # Not necessary if TD003 is fixed
+  "TD003", # TODO: Make sure all TODOs have issues
+  "TRY003", # Not a problem
+  "ANN", # TODO: Add typing
+  "RUF012", # TODO: Add typing
 ]
 
 [tool.ruff.lint.isort]
