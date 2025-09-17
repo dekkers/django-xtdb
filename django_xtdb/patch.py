@@ -1,13 +1,26 @@
+from __future__ import annotations
+
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from django.db.models.fields import NOT_PROVIDED, AutoField, BigAutoField, Field, SmallAutoField
+from django.conf import settings
+from django.db import router
+from django.db.models.fields import NOT_PROVIDED, AutoField, Field
+
+if TYPE_CHECKING:
+    from django.db.models import Model
 
 
-def field_init(self: Any, *args: Any, **kwargs: Any) -> None:
-    self.__orig_init__(*args, **kwargs)
+def is_xtdb_model(cls: type[Model]) -> bool:
+    db = router.db_for_write(cls)
+    if settings.DATABASES[db]["ENGINE"] == "django_xtdb":
+        return True
+    else:
+        return False
 
-    if self.primary_key:
+
+def contribute_to_class(self: Any, cls: type[Model], name: str, private_only: bool = False) -> None:
+    if self.primary_key and is_xtdb_model(cls):
         # XTDB always requires an _id column with the primary key of the row.
         self.db_column = "_id"
         if self.default is NOT_PROVIDED and isinstance(self, AutoField):
@@ -28,19 +41,16 @@ def field_init(self: Any, *args: Any, **kwargs: Any) -> None:
             # increasing makes running the test suite easier.
             self.default = time.time_ns
 
-    # This is for model inheritance. The parent_link is the field that links
-    # back to the parent model. Given that functions as the primary key the
-    # field also needs to be called _id.
-    if self.remote_field and self.remote_field.parent_link:
+            # Given that XTDB does not have server side IDs those also won't be returned
+            # and we have to set this to False.
+            self.db_returning = False
+
+    if self.remote_field and self.remote_field.parent_link and is_xtdb_model(cls):
         self.db_column = "_id"
+
+    self.orig_contribute_to_class(cls, name, private_only)
 
 
 def monkey_patch() -> None:
-    # Given that XTDB does not have server side IDs those also won't be returned
-    # and we have to set this to False.
-    AutoField.db_returning = False
-    SmallAutoField.db_returning = False
-    BigAutoField.db_returning = False
-
-    Field.__orig_init__ = Field.__init__  # type: ignore[attr-defined]
-    Field.__init__ = field_init  # type: ignore[method-assign]
+    Field.orig_contribute_to_class = Field.contribute_to_class  # type: ignore[attr-defined]
+    Field.contribute_to_class = contribute_to_class  # type: ignore[method-assign]
