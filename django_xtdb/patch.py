@@ -1,9 +1,10 @@
 import time
+from typing import Any
 
 from django.db.models.fields import NOT_PROVIDED, AutoField, BigAutoField, Field, SmallAutoField
 
 
-def field_init(self, *args, **kwargs):
+def field_init(self: Any, *args: Any, **kwargs: Any) -> None:
     self.__orig_init__(*args, **kwargs)
 
     if self.primary_key:
@@ -34,12 +35,12 @@ def field_init(self, *args, **kwargs):
         self.db_column = "_id"
 
 
-def monkey_patch():
+def monkey_patch() -> None:
     # Given that XTDB does not have server side IDs those also won't be returned
     # and we have to set this to False.
     AutoField.db_returning = False
     SmallAutoField.db_returning = False
     BigAutoField.db_returning = False
 
-    Field.__orig_init__ = Field.__init__
-    Field.__init__ = field_init
+    Field.__orig_init__ = Field.__init__  # type: ignore[attr-defined]
+    Field.__init__ = field_init  # type: ignore[method-assign]

@@ -1,9 +1,20 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any
 
 from django.db import connections
 from django.db.backends.base import features
 from django.db.backends.base.introspection import TableInfo
 from django.db.backends.postgresql import base, creation, introspection, operations, schema
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator, Sequence
+
+    from django.core.management.color import Style
+    from django.db.backends.utils import CursorWrapper
+    from django.db.models import Model
+    from django.db.models.fields import Field
 
 
 class DatabaseFeatures(features.BaseDatabaseFeatures):
@@ -93,7 +104,7 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
 
 
 class DatabaseIntrospection(introspection.DatabaseIntrospection):
-    def get_table_list(self, cursor):
+    def get_table_list(self, cursor: CursorWrapper) -> list[TableInfo]:  # type: ignore[override]
         cursor.cursor.connection.connection.read_only = True
         with cursor.cursor.connection.connection.transaction():
             cursor.execute("SELECT tablename FROM pg_tables where schemaname = 'public'")
@@ -103,13 +114,15 @@ class DatabaseIntrospection(introspection.DatabaseIntrospection):
 class DatabaseOperations(operations.DatabaseOperations):
     compiler_module = "django_xtdb.compiler"
 
-    def adapt_ipaddressfield_value(self, value):
+    def adapt_ipaddressfield_value(self, value: str | None) -> str | None:
         return value
 
-    def sequence_reset_sql(self, style, model_list):
+    def sequence_reset_sql(self, style: Style, model_list: Sequence[type[Model]]) -> list[Any]:
         return []
 
-    def sql_flush(self, style, tables, *, reset_sequences=False, allow_cascade=False):
+    def sql_flush(
+        self, style: Style, tables: Sequence[str], *, reset_sequences: bool = False, allow_cascade: bool = False
+    ) -> list[str]:
         return [
             "{} {} {};".format(
                 style.SQL_KEYWORD("DELETE"), style.SQL_KEYWORD("FROM"), style.SQL_FIELD(self.quote_name(table))
@@ -117,46 +130,53 @@ class DatabaseOperations(operations.DatabaseOperations):
             for table in tables
         ]
 
-    def execute_sql_flush(self, sql_list):
+    def execute_sql_flush(self, sql_list: Iterable[str]) -> None:
         self.connection.connection.read_only = False
         with self.connection.connection.transaction(), self.connection.cursor() as cursor:
             for sql in sql_list:
                 cursor.execute(sql)
 
-    def lookup_cast(self, lookup_type, internal_type=None):
+    def lookup_cast(self, lookup_type: str, internal_type: str | None = None) -> str:
         return "%s"
 
-    def date_trunc_sql(self, lookup_type, sql, params, tzname=None):
-        sql, params = self._convert_sql_to_tz(sql, params, tzname)
+    def date_trunc_sql(self, lookup_type: str, sql: str, params: Any, tzname: str | None = None) -> tuple[str, Any]:
+        sql, params = self._convert_sql_to_tz(sql, params, tzname)  # type: ignore[attr-defined]
         return f"DATE_TRUNC({lookup_type.upper()}, {sql})", (*params,)
 
-    def datetime_trunc_sql(self, lookup_type, sql, params, tzname):
-        sql, params = self._convert_sql_to_tz(sql, params, tzname)
-        return f"DATE_TRUNC({lookup_type.upper()}, {sql})", (*params,)
+    def datetime_trunc_sql(self, lookup_type: str, sql: str, params: Any, tzname: str | None) -> str:
+        sql, params = self._convert_sql_to_tz(sql, params, tzname)  # type: ignore[attr-defined]
+        return f"DATE_TRUNC({lookup_type.upper()}, {sql})"
 
 
 class DatabaseSchemaEditor(schema.DatabaseSchemaEditor):
-    def create_model(self, model):
+    def create_model(self, model: type[Model]) -> None:
         return
 
-    def alter_unique_together(self, *args, **kwargs):
+    def alter_unique_together(
+        self,
+        model: type[Model],
+        old_unique_together: Sequence[Sequence[str]],
+        new_unique_together: Sequence[Sequence[str]],
+    ) -> None:
         return
 
-    def remove_field(self, *args, **kwargs):
+    def add_field(self, model: type[Model], field: Field[Any, Any]) -> None:
         return
 
-    def alter_field(self, *args, **kwargs):
+    def remove_field(self, model: type[Model], field: Field[Any, Any]) -> None:
         return
 
-    def add_field(self, *args, **kwargs):
+    def alter_field(
+        self, model: type[Model], old_field: Field[Any, Any], new_field: Field[Any, Any], strict: bool = False
+    ) -> None:
         return
 
 
 class DatabaseCreation(creation.DatabaseCreation):
-    def _execute_create_test_db(self, cursor, parameters, keepdb=False):
+    def _execute_create_test_db(self, cursor: Any, parameters: dict[str, Any], keepdb: bool = False) -> None:
         return
 
-    def _destroy_test_db(self, test_database_name, verbosity):
+    def _destroy_test_db(self, test_database_name: str, verbosity: int) -> None:
         return
 
 
@@ -165,24 +185,24 @@ class DatabaseWrapper(base.DatabaseWrapper):
     display_name = "XTDB"
     SchemaEditorClass = DatabaseSchemaEditor
     creation_class = DatabaseCreation
-    features_class = DatabaseFeatures
+    features_class: type[DatabaseFeatures] = DatabaseFeatures  # type: ignore[assignment]
     introspection_class = DatabaseIntrospection
     ops_class = DatabaseOperations
 
-    def ensure_timezone(self):
+    def ensure_timezone(self) -> bool:
         return False
 
-    def _configure_connection(self, connection):
+    def _configure_connection(self, connection: Any) -> bool:
         return False
 
-    def check_constraints(self, table_names=None):
+    def check_constraints(self, table_names: list[str] | None = None) -> None:
         pass
 
-    def create_cursor(self, name=None):
+    def create_cursor(self, name: str | None = None) -> Any:
         return self.connection.cursor()
 
     @contextmanager
-    def _nodb_cursor(self):
+    def _nodb_cursor(self) -> Iterator[Any]:
         """
         Return a cursor that doesn't connect to a specific database.
 

@@ -21,6 +21,9 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[tool.mypy]
+strict = true
+
 [tool.ruff]
 fix = true
 extend-exclude = [
@@ -47,6 +50,7 @@ ignore = [
   "D212", # Incompatible with D213
   "EM", # Not a problem
   "FIX", # Comments indicating todos are useful
+  "FBT001", # We can't fix the Django APIs
   "FBT002", # We can't fix the Django APIs
   "PLR2004", # False positives
   "PLR5501", # Not always better

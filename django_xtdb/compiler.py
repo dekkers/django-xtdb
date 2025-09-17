@@ -1,18 +1,26 @@
+from __future__ import annotations
+
+import typing
+from typing import Any
+
 from django.db.models.sql.compiler import SQLAggregateCompiler  # noqa: F401
 from django.db.models.sql.compiler import SQLCompiler as BaseSQLCompiler
 from django.db.models.sql.compiler import SQLDeleteCompiler as BaseSQLDeleteCompiler
 from django.db.models.sql.compiler import SQLInsertCompiler as BaseSQLInsertCompiler
 from django.db.models.sql.compiler import SQLUpdateCompiler as BaseSQLUpdateCompiler
 
+if typing.TYPE_CHECKING:
+    from django.db.models.sql.compiler import _AsSqlType
+
 
 class SQLCompiler(BaseSQLCompiler):
     # This is workaround for the XTDB duplicate column projection error that
     # happens if you select two columns of the same name from two different
     # tables
-    def as_sql(self, with_limits=True, with_col_aliases=False):
+    def as_sql(self, with_limits: bool = True, with_col_aliases: bool = False) -> _AsSqlType:
         return super().as_sql(with_limits, with_col_aliases=True)
 
-    def execute_sql(self, *args, **kwargs):
+    def execute_sql(self, *args: Any, **kwargs: Any) -> Any:
         if self.connection.connection:
             self.connection.connection.read_only = True
             with self.connection.connection.transaction():
@@ -24,7 +32,7 @@ class SQLCompiler(BaseSQLCompiler):
 
 
 class SQLInsertCompiler(BaseSQLInsertCompiler):
-    def execute_sql(self, *args, **kwargs):
+    def execute_sql(self, *args: Any, **kwargs: Any) -> list[tuple[Any]]:  # type: ignore[override]
         if self.connection.connection:
             self.connection.connection.read_only = False
             with self.connection.connection.transaction():
@@ -36,7 +44,7 @@ class SQLInsertCompiler(BaseSQLInsertCompiler):
 
 
 class SQLUpdateCompiler(BaseSQLUpdateCompiler):
-    def execute_sql(self, *args, **kwargs):
+    def execute_sql(self, *args: Any, **kwargs: Any) -> int:  # type: ignore[override]
         if self.connection.connection:
             self.connection.connection.read_only = False
             with self.connection.connection.transaction():
@@ -50,7 +58,7 @@ class SQLUpdateCompiler(BaseSQLUpdateCompiler):
 
 
 class SQLDeleteCompiler(BaseSQLDeleteCompiler):
-    def execute_sql(self, *args, **kwargs):
+    def execute_sql(self, *args: Any, **kwargs: Any) -> Any:
         if self.connection.connection:
             self.connection.connection.read_only = False
             with self.connection.connection.transaction():
