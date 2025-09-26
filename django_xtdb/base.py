@@ -32,6 +32,7 @@ class DatabaseFeatures(features.BaseDatabaseFeatures):
     supports_expression_indexes = True
     uses_server_side_binding = False
     supports_unlimited_charfield = True
+    allows_group_by_select_index = False
 
     # XTDB supports transactions, but differently than most other SQL databases
     # and not in a way Django expects.
