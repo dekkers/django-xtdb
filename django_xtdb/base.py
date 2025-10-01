@@ -137,7 +137,12 @@ class DatabaseOperations(operations.DatabaseOperations):
                 cursor.execute(sql)
 
     def lookup_cast(self, lookup_type: str, internal_type: str | None = None) -> str:
-        return "%s"
+        lookup = "%s"
+
+        if lookup_type in ("iexact", "icontains", "istartswith", "iendswith"):
+            lookup = "UPPER(%s)" % lookup
+
+        return lookup
 
     def date_trunc_sql(self, lookup_type: str, sql: str, params: Any, tzname: str | None = None) -> tuple[str, Any]:
         sql, params = self._convert_sql_to_tz(sql, params, tzname)  # type: ignore[attr-defined]
